@@ -23,9 +23,18 @@ def create_shadow():
     return shadow
 
 def draw_chart(X, y, keyX, keyY, X_2, Y_2):
+    '''Generuje wykres
+    :param X: argumenty
+    :param Y: wartości
+    :param keyX: nazwa osi X
+    :param keyY: nazwa osi Y
+    :param X_2: wspł. X punktu
+    :param Y_2: wspł. Y punktu'''
+
     plt.figure(figsize=(8, 5))
-    plt.plot(X, y, color="green", markersize=50)
-    plt.plot(X_2, Y_2,'go',label=f'Punkt{X_2, Y_2}')
+    plt.plot(X, y, color="#ff8fab", markersize=50)
+    plt.plot(X_2, Y_2,'o',color='#ff8fab',label=f'Punkt{X_2, Y_2}')
+    plt.legend()
     plt.autoscale()
     plt.xlabel(keyX)
     plt.ylabel(keyY)
@@ -1067,7 +1076,7 @@ class MainWindow(QWidget):
                 self.result_window.add_entry(f"[Engset] A (przy B={value_B}, N={value_N}), value_Num={value_Num}", wynik)
             
             if self.plotParamB_E.isChecked():
-                Bs = [i/50 for i in range(1, 50)]  # 49 punktów
+                Bs = [i/50 for i in range(1, 50)]  
                 As = [Engset.engset_A(value_Num, value_N, b) for b in Bs]
                 draw_chart(Bs, As, "Prawdopodobieństwo blokady B", "Natężenie ruchu A", value_B, wynik)
 
@@ -1077,8 +1086,7 @@ class MainWindow(QWidget):
                 As = [Engset.engset_A(value_Num, n, value_B) for n in Ns]
                 draw_chart(Ns, As, "Liczba kanałów N", "Natężenie ruchu A", value_N, wynik)
 
-        elif self.option2_B.isChecked():   # obliczamy B
-        # walidacja A, N, Num
+        elif self.option2_B.isChecked(): 
             if not (0.1 <= value_A <= 100 and 1 <= value_N <= 100 and 10 <= value_Num <= 2000):
                 self.result_window.add_entry("Błąd: A, N lub liczba użytkowników poza zakresem", 0)
             
@@ -1087,20 +1095,16 @@ class MainWindow(QWidget):
                 self.result_window.add_entry(f"[Engeset] B (przy A={value_A}, N={value_N}, value_Num={value_Num})", wynik)
 
             if self.plotParamN_E.isChecked():
-                # wariacja po N – wykres Erlang B = f(N) przy stałym A
                 Ns = list(range(1, value_N + 1))
-                # dla każdego n wywołujemy erlang.erlang_A z wartością B, a nie z 'wynik'
                 As = [Engset.engset_b(value_A, value_Num, n) for n in Ns]
                 draw_chart(Ns, As, "Liczba kanałów N", "Prawdopodobieństwo blokady B", value_N, wynik)
 
             elif self.plotParamA_E.isChecked():
-                # wariacja po B – wykres Erlang A = f(B) przy stałym N
-                # dobieramy 50 punktów w przedziale [0.001, 0.999]
                 As1 = list(range(1, int(value_A) + 1))
                 As = [Engset.engset_b(b, value_Num, value_N) for b in As1]
                 draw_chart(As1, As, "Natężenie ruchu A", "Prawdopodobieństwo blokady B", value_A, wynik)
 
-        elif self.option3_N.isChecked():   # obliczamy N
+        elif self.option3_N.isChecked(): 
             if not (0.1 <= value_A <= 100 and 0.001 <= value_B <= 0.499 and 10 <= value_Num <= 2000):
                 self.result_window.add_entry("Błąd: A, B lub liczba użytkowników poza zakresem", 0)
 
@@ -1108,7 +1112,6 @@ class MainWindow(QWidget):
                 wynik = Engset.engset_N(value_A, value_Num, value_B)
                 self.result_window.add_entry(f"[Engset] N (przy A={value_A}, value_num={value_Num}, B={value_B})", wynik)
 
-                        # WARIACJA PO B — wykres: N = f(B)
             if self.plotParamB_E.isChecked(): 
                 Bs = [i / 100 for i in range(1, 100)]  # np. 0.01 - 0.99
                 Ns = [Engset.engset_N(value_A, value_Num, b) for b in Bs]
@@ -1122,7 +1125,7 @@ class MainWindow(QWidget):
                 
                 for a in As1:
                     n = Engset.engset_N(a, value_Num, value_B)
-                    if n is None or n == value_Num:  # osiągnięto kres modelu
+                    if n is None or n == value_Num: 
                         break
                     As_filtered.append(a)
                     Ns_filtered.append(n)
@@ -1146,7 +1149,7 @@ class MainWindow(QWidget):
         value_A = self.value_get(textA)
 
         # Liczenie wartości dla różnych inputów
-        if self.option1_AEL.isChecked():  # liczymy A, mamy B i N
+        if self.option1_AEL.isChecked(): 
             if not (0.001 <= value_B <= 0.999 and 1 <= value_N <= 180):
                 self.result_window.add_entry("Błąd: B lub N poza zakresem", 0)
             else:
@@ -1154,15 +1157,11 @@ class MainWindow(QWidget):
                 self.result_window.add_entry(f"[Erlang] A (przy B={value_B}, N={value_N})", wynik)
 
             if self.plotParamN.isChecked():
-                # wariacja po N – wykres Erlang B = f(N) przy stałym A
                 Ns = list(range(1, value_N + 1))
-                # dla każdego n wywołujemy erlang.erlang_A z wartością B, a nie z 'wynik'
                 As = [erlang.erlang_A(value_B, n) for n in Ns]
                 draw_chart(Ns, As, "Liczba kanałów N", "Natężenie ruchu A", value_N, wynik)
 
             elif self.plotParamB.isChecked():
-                # wariacja po B – wykres Erlang A = f(B) przy stałym N
-                # dobieramy 50 punktów w przedziale [0.001, 0.999]
                 Bs = [i/50 for i in range(1, 50)]
                 As = [erlang.erlang_A(b, value_N) for b in Bs]
                 draw_chart(Bs, As, "Prawdopodobieństwo blokady B", "Natężenie ruchu A", value_B, wynik)
@@ -1177,15 +1176,11 @@ class MainWindow(QWidget):
 
 
             if self.plotParamN.isChecked():
-                # wariacja po N – wykres Erlang B = f(N) przy stałym A
                 Ns = list(range(1, value_N + 1))
-                # dla każdego n wywołujemy erlang.erlang_A z wartością B, a nie z 'wynik'
                 As = [erlang.erlang_b(value_A, n) for n in Ns]
                 draw_chart(Ns, As, "Liczba kanałów N", "Prawdopodobieństwo blokady B", value_N, wynik)
 
             elif self.plotParamA.isChecked():
-                # wariacja po B – wykres Erlang A = f(B) przy stałym N
-                # dobieramy 50 punktów w przedziale [0.001, 0.999]
                 As1 = list(range(1, int(value_A) + 1))
                 As = [erlang.erlang_b(b, value_N) for b in As1]
                 draw_chart(As1, As, "Natężenie ruchu A", "Prawdopodobieństwo blokady B", value_A, wynik)
@@ -1198,14 +1193,11 @@ class MainWindow(QWidget):
                 self.result_window.add_entry(f"[Erlang] N (przy A={value_A}, B={value_B})", wynik)
 
             if self.plotParamB.isChecked():
-                # wariacja po N – wykres Erlang B = f(N) przy stałym A
                 Bs = [i/50 for i in range(1, 50)]
                 As = [erlang.erlang_N(value_A, b) for b in Bs]
                 draw_chart(Bs, As, "Prawdopodobieństwo blokady B", "Liczba kanałów N", value_B, wynik)
 
             elif self.plotParamA.isChecked():
-                # wariacja po B – wykres Erlang A = f(B) przy stałym N
-                # dobieramy 50 punktów w przedziale [0.001, 0.999]
                 As1 = list(range(1, int(value_A) + 1))
                 As = [erlang.erlang_N(b, value_B) for b in As1]
                 draw_chart(As1, As, "Natężenie ruchu A", "Liczba kanałów N", value_A, wynik)
